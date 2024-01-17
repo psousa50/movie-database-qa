@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "movie-database-qa"
+version = "0.1.0"
+description = "A POC for a movie database QA using LLM agents"
+authors = ["Pedro Sousa <pedronsousa@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+gradio = "^4.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
