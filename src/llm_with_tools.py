@@ -1,12 +1,12 @@
 import json
-from prompts import system_prompt
 
 
-class ChatBot:
+class LLMWithTools:
     def __init__(self, client, user_input, tools_map, system_prompt):
         self.client = client
         self.user_input = user_input
         self.tools_map = tools_map
+        self.system_prompt = system_prompt
         self.messages = []
         self.contextual_information = []
 
@@ -18,25 +18,24 @@ class ChatBot:
         self.messages = []
         self.add_message(
             "system",
-            system_prompt.replace("{tools}", tools_json).replace(
+            self.system_prompt.replace("{tools}", tools_json).replace(
                 "{contextual_information}", contextual_information_json
             ),
         )
         self.add_message("user", self.user_input)
 
-        print("messages", self.messages)
-        print(
-            "==============================================================================\n",
-            json.dumps(self.messages, indent=4).replace("\\n", "\n").replace('"', '"'),
-            "------------------------------------------------------------------------------\n",
-        )
+        # print(
+        #     "==============================================================================\n",
+        #     json.dumps(self.messages, indent=4).replace("\\n", "\n").replace('"', '"'),
+        #     "------------------------------------------------------------------------------\n",
+        # )
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
             messages=self.messages,
         )
-        content = response.choices[0].message.content
-        print("content", content)
-        return json.loads(content)
+        llm_response = response.choices[0].message.content
+        print("Response", llm_response)
+        return json.loads(llm_response)
 
     def build_tools_prompt(self, tools):
         tools_json = [self.create_tool_json(tool) for tool in tools]
