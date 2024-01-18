@@ -1,3 +1,4 @@
+import textwrap
 import requests
 
 from tool import Tool
@@ -41,8 +42,43 @@ def discover_movies(
     year="",
 ):
     """Discovers movies"""
-    response = tmdb_request("discover/movie?language=en-US&sort_by=popularity.desc")
+    query = textwrap.dedent(
+        f"""\
+            discover/movie?
+            &include_adult={include_adult}
+            &include_video={include_video}
+            {add("language", language)}
+            {add("primary_release_year", primary_release_year)}
+            {add("region", region)}
+            {add("sort_by", sort_by)}
+            {add("vote_average", vote_average)}
+            {add("vote_count", vote_count)}
+            {add("watch_region", watch_region)}
+            {add("with_cast", with_cast)}
+            {add("with_companies", with_companies)}
+            {add("with_crew", with_crew)}
+            {add("with_genres", with_genres)}
+            {add("with_keywords", with_keywords)}
+            {add("with_origin_country", with_origin_country)}
+            {add("with_original_language", with_original_language)}
+            {add("with_people", with_people)}
+            {add("without_companies", without_companies)}
+            {add("without_genres", without_genres)}
+            {add("without_keywords", without_keywords)}
+            {add("without_watch_providers", without_watch_providers)}
+            {add("year", year)}            
+        """
+    ).replace("\n", "")
+
+    print("query", query)
+    response = tmdb_request(query)
     return [(movie["id"], movie["title"]) for movie in response["results"]]
+
+
+def add(key, value):
+    if value:
+        return f"&{key}={value}"
+    return ""
 
 
 def search_movie(query: str):
