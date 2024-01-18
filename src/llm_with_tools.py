@@ -26,13 +26,13 @@ class LLMWithTools:
         )
         self.add_message("user", self.user_input)
 
-        # print(
-        #     "==============================================================================\n",
-        #     json.dumps(self.messages, indent=4)
-        #     .replace("\\n", "\n")
-        #     .replace('\\"', '"'),
-        #     "------------------------------------------------------------------------------\n",
-        # )
+        print(
+            "==============================================================================\n",
+            json.dumps(self.messages, indent=4)
+            .replace("\\n", "\n")
+            .replace('\\"', '"'),
+            "------------------------------------------------------------------------------\n",
+        )
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=self.messages,
