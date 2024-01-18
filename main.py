@@ -7,33 +7,22 @@ import math
 
 system_prompt = """
 You are a powerfull AI assistant. Your job is to answer questions from users.
-You have a list of tools that you should use to answer questions.
+You have a list of tools that you should use to answer questions. Don't use your own knowledge to answer questions. You know nothing about math.
 If you need to use a tool, return a response in the following JSON format:
-[
-    {
-        "tool": "tool_name",
-        "parameters": {
-            "parameter_name": "parameter_value",
-        },
-    {
-        "tool": "another_tool_name",
-        "parameters": {
-            "parameter_name": "parameter_value",
-        },
+{
+    "tool": "tool_name",
+    "parameters": {
+        "parameter_name": "parameter_value"
     }
-]
-
-You may nned to use multiple tools to answer a question. In that case, return a response in the following JSON format:
+}
 
 Use the information returned by tools to answer the user's questions.
 
 As soon as you are able to answer the user's question, return a response in the following JSON format:
-[
-    {
-        "tool": "none",
-        "response: <your response>"
-    }
-]
+{
+    "tool": "none",
+    "response: <your response>"
+}
 
 The tools are described below with the following schema:
 {
@@ -45,53 +34,60 @@ The tools are described below with the following schema:
     }
 }
 
-RETURN ONLY A VALID JSON STRING, NOTHING ELSE. Remove any characters that are not part of the JSON.
+Do not include code fences in your response, for example
+
+    Bad response (because it contains the code fence):
+    ```javascript
+    console.log("hello world")
+    ```
+
+    Good response (because it only contains the code):
+    console.log("hello world")
+
 
 TOOLS:
 {tools}
 
-"""
+The responses returned by tools are described below. Please use them to answer the user's questions.
 
-ensure_json_prompt = """
-You are a JSON expert. Fix the following JSON string so that it is valid JSON. If the JSON in envolved in ``` characters, remove them.
+CONTEXTUAL INFORMATION:
+{contextual_information}
 
-{json_string}
 """
 
 
 class ChatBot:
-    def __init__(self, client, tools_map, system_prompt):
-        tools = [tool.to_json() for tool in tools_map.values()]
-        tools_json = json.dumps(tools, indent=4)
-        self.messages = []
-        self.add_message("system", system_prompt.replace("{tools}", tools_json))
+    def __init__(self, client, user_input, tools_map, system_prompt):
         self.client = client
-
-    def fix_json(self, json_string):
-        message = self.create_message(
-            "system", ensure_json_prompt.replace("{json_string}", json_string)
-        )
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
-            messages=[message],
-        )
-        return response.choices[0].message.content
+        self.user_input = user_input
+        tools = [tool.to_json() for tool in tools_map.values()]
+        self.tools_json = json.dumps(tools, indent=4)
+        self.messages = []
+        self.contextual_information = []
 
     def llm_response(self):
+        self.messages = []
+        contextual_information_json = json.dumps(self.contextual_information, indent=4)
+        self.add_message(
+            "system",
+            system_prompt.replace("{tools}", self.tools_json).replace(
+                "{contextual_information}", contextual_information_json
+            ),
+        )
+        self.add_message("user", input)
+
         print(
             "==============================================================================\n",
             json.dumps(self.messages, indent=4).replace("\\n", "\n").replace('"', '"'),
             "------------------------------------------------------------------------------\n",
         )
-        response = client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
             messages=self.messages,
         )
         content = response.choices[0].message.content
         print("content", content)
-        fixed_json = self.fix_json(content)
-        print("fixed_json", fixed_json)
-        return json.loads(fixed_json)
+        return json.loads(content)
 
     def build_tools_prompt(self, tools):
         tools_json = [self.create_tool_json(tool) for tool in tools]
@@ -111,23 +107,24 @@ class ChatBot:
     def create_message(self, role, content):
         return {"role": role, "content": content}
 
-    def get_response(self, input):
-        self.add_message("user", input)
+    def get_response(self):
         response = None
         while response is None:
             llm_response = self.llm_response()
-            for tool_response in llm_response:
-                tool_name = tool_response["tool"]
-                if tool_name == "none":
-                    response = tool_response["response"]
-                else:
-                    tool = tools_map[tool_name]
-                    parameters = tool_response["parameters"]
-                    tool_response = tool(parameters)
-                    chat_bot.add_message(
-                        "assistant",
-                        f"{tool_name} {parameters} Response: {tool_response}",
-                    )
+            tool_name = llm_response["tool"]
+            if tool_name == "none":
+                response = llm_response["response"]
+            else:
+                tool = tools_map[tool_name]
+                parameters = llm_response["parameters"]
+                tool_response = tool(parameters)
+                self.contextual_information.append(
+                    {
+                        "tool_name": tool_name,
+                        "parameters": parameters,
+                        "response": tool_response,
+                    }
+                )
         return response
 
 
@@ -182,12 +179,12 @@ square_root_number_tool = Tool(
 tools_map = {
     tool.tool_name: tool for tool in [add_numbers_tool, square_root_number_tool]
 }
-client = OpenAI()
-chat_bot = ChatBot(client, tools_map, system_prompt)
 
 
 def start(input):
-    response = chat_bot.get_response(input)
+    client = OpenAI()
+    chat_bot = ChatBot(client, input, tools_map, system_prompt)
+    response = chat_bot.get_response()
     print("response", response)
 
 
