@@ -69,7 +69,9 @@ def discover_movies(
     ).replace("\n", "")
     print("Discover query", query)
     response = tmdb_request(query)
-    return [(movie["id"], movie["title"]) for movie in response["results"]]
+    return [
+        {"id": movie["id"], "title": movie["title"]} for movie in response["results"]
+    ]
 
 
 def add(key, value):
@@ -79,12 +81,15 @@ def add(key, value):
 
 
 def search_movie(query: str):
-    """Searches for a list of movies and returns the id and the title"""
+    """Searches for a list of movies"""
     print("Search movie query", query)
     response = tmdb_request(
         f"search/movie?query={query}&include_adult=false&language=en-US&page=1"
     )
-    return [(movie["id"], movie["title"]) for movie in response["results"]]
+    return [
+        {"id": movie["id"], "title": movie["title"], "overview": movie["overview"]}
+        for movie in response["results"]
+    ]
 
 
 def search_person(query: str):
@@ -94,7 +99,11 @@ def search_person(query: str):
         f"search/person?query={query}&include_adult=false&language=en-US&page=1"
     )
     return [
-        (person["id"], person["name"], person["known_for_department"])
+        {
+            "id": person["id"],
+            "name": person["name"],
+            "known_for_department": person["known_for_department"],
+        }
         for person in response["results"]
     ]
 
@@ -103,7 +112,7 @@ def get_movie_reviews(movie_id: int):
     """Gets the reviews for a movie"""
     print("Reviews query", movie_id)
     response = tmdb_request(f"movie/{movie_id}/reviews?language=en-US&page=1")
-    return [review["content"] for review in response["results"]]
+    return [{"content": review["content"]} for review in response["results"]]
 
 
 def get_movie_cast(movie_id: int):
@@ -113,10 +122,13 @@ def get_movie_cast(movie_id: int):
     only_acting_cast = [
         cast for cast in response["cast"] if cast["known_for_department"] == "Acting"
     ][:10]
-    return [(cast["name"], cast["character"]) for cast in only_acting_cast]
+    return [
+        {"id": cast["id"], "name": cast["name"], "character": cast["character"]}
+        for cast in only_acting_cast
+    ]
 
 
 def all_movie_genres():
     """Gets all movie genres"""
     response = tmdb_request(f"genre/movie/list")
-    return response["genres"]
+    return {"genres": response["genres"]}

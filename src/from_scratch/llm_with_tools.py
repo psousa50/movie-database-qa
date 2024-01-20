@@ -2,15 +2,18 @@ import json
 
 from openai import OpenAI
 
+from log import log
+
 
 class LLMWithTools:
-    def __init__(self, user_input, tools_map, system_prompt):
+    def __init__(self, user_input, tools_map, system_prompt, options={}):
         self.client = OpenAI()
         self.user_input = user_input
         self.tools_map = tools_map
         self.system_prompt = system_prompt
         self.messages = []
         self.contextual_information = []
+        self.options = options
 
     def llm_response(self):
         tools = [tool.to_json() for tool in self.tools_map.values()]
@@ -26,20 +29,21 @@ class LLMWithTools:
         )
         self.add_message("user", self.user_input)
 
-        # print(
-        #     "==============================================================================\n",
-        #     json.dumps(self.messages, indent=4)
-        #     .replace("\\n", "\n")
-        #     .replace('\\"', '"'),
-        #     "------------------------------------------------------------------------------\n",
-        # )
+        if self.options.get("verbose", False) and self.options.get("log_prompt", False):
+            print(
+                "==============================================================================\n",
+                json.dumps(self.messages, indent=4)
+                .replace("\\n", "\n")
+                .replace('\\"', '"'),
+                "------------------------------------------------------------------------------\n",
+            )
         response = self.client.chat.completions.create(
             model="gpt-4",
             messages=self.messages,
             temperature=0.0,
         )
         llm_response = response.choices[0].message.content
-        print("Response", llm_response)
+        log("Response", llm_response)
         return json.loads(llm_response)
 
     def build_tools_prompt(self, tools):
@@ -71,12 +75,20 @@ class LLMWithTools:
                 tool = self.tools_map[tool_name]
                 parameters = llm_response["parameters"]
                 tool_response = tool(parameters)
-                print("Tool response", json.dumps(tool_response, indent=4))
+                returned_fields_to_include = llm_response["returned_fields_to_include"]
+                tool_response_filtered = [
+                    {k: v for k, v in r.items() if k in returned_fields_to_include}
+                    for r in tool_response
+                ]
+                log(
+                    "Tool response filtered",
+                    json.dumps(tool_response_filtered, indent=4),
+                )
                 self.contextual_information.append(
                     {
                         "tool": tool_name,
                         "parameters": parameters,
-                        "response": tool_response,
+                        "response": tool_response_filtered,
                     }
                 )
         return response

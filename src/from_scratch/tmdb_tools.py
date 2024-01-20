@@ -67,6 +67,7 @@ discover_movies_tool = Tool(
         "year": {"type": "int", "description": "year"},
     },
     description=discover_movies.__doc__,
+    returned_fields=["id", "title"],
     fn=discover_movies,
 )
 
@@ -75,6 +76,7 @@ search_movie_tool = Tool(
     tool_name="search_movie",
     parameters={"query": {"type": "string", "description": "query to search"}},
     description=search_movie.__doc__,
+    returned_fields=["id", "title", "overview"],
     fn=search_movie,
 )
 
@@ -82,6 +84,7 @@ search_person_tool = Tool(
     tool_name="search_person",
     parameters={"query": {"type": "string", "description": "query to search"}},
     description=search_person.__doc__,
+    returned_fields=["id", "name", "known_for_department"],
     fn=search_person,
 )
 
@@ -89,6 +92,7 @@ get_movie_reviews_tool = Tool(
     tool_name="get_movie_reviews",
     parameters={"movie_id": {"type": "int", "description": "movie id"}},
     description=get_movie_reviews.__doc__,
+    returned_fields=["content"],
     fn=get_movie_reviews,
 )
 
@@ -96,6 +100,7 @@ get_movie_cast_tool = Tool(
     tool_name="get_movie_cast",
     parameters={"movie_id": {"type": "int", "description": "movie id"}},
     description=get_movie_cast.__doc__,
+    returned_fields=["id", "name", "character"],
     fn=get_movie_cast,
 )
 
@@ -103,6 +108,7 @@ all_movie_genres_tool = Tool(
     tool_name="all_movie_genres",
     parameters={},
     description=all_movie_genres.__doc__,
+    returned_fields=["id", "name"],
     fn=all_movie_genres,
 )
 

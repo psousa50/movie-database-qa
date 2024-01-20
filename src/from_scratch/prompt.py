@@ -7,9 +7,11 @@ If you need to use a tool, return a response in the following JSON format:
     "parameters": {
         "parameter_name": "parameter_value"
     }
+    "returned_fields_to_include": ["field_1", "field_2", ...]
 }
 
 You should include only the required parameters to answer the user's question. If the parameter is not required, you can omit it.
+You should also include the returned_fields_to_include, which is a list of fields that you want to include in the response.
 
 Use the information returned by tools to answer the user's questions.
 
@@ -28,6 +30,7 @@ The tools are described below with the following schema:
                 "description": "parameter_description"
             }
         },
+        "returned_fields": ["field_1", "field_2", ...]
         "description": "tool_description"
     }
 }

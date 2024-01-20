@@ -1,6 +1,8 @@
 from typing import Any, Dict, List
 from langchain.callbacks.base import BaseCallbackHandler
 
+from log import log
+
 
 class LLMStartHandler(BaseCallbackHandler):
     def __init__(self) -> None:
@@ -13,7 +15,7 @@ class LLMStartHandler(BaseCallbackHandler):
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
     ) -> Any:
         """Run when LLM starts running."""
-        print("on_llm_start", prompts)
+        log("on_llm_start", prompts)
 
     def on_chat_model_start(
         self,
@@ -22,4 +24,4 @@ class LLMStartHandler(BaseCallbackHandler):
         **kwargs: Any
     ) -> Any:
         """Run when Chat Model starts running."""
-        print("on_chat_model_start", messages)
+        log("on_chat_model_start", messages)

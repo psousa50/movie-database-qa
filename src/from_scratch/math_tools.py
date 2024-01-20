@@ -1,15 +1,16 @@
 import math
 
 from from_scratch.tool import Tool
+from log import log
 
 
 def add_numbers(n1: int, n2: int):
-    print("TOOL: add_numbers", n1, n2)
+    log("TOOL: add_numbers", n1, n2)
     return n1 + n2
 
 
 def square_root_number(n: int):
-    print("TOOL: square_root_number", n)
+    log("TOOL: square_root_number", n)
     return math.sqrt(n)
 
 

@@ -1,7 +1,8 @@
 class Tool:
-    def __init__(self, tool_name, parameters, description, fn):
+    def __init__(self, tool_name, parameters, returned_fields, description, fn):
         self.tool_name = tool_name
         self.parameters = parameters
+        self.returned_fields = returned_fields
         self.description = description
         self.fn = fn
 
@@ -18,5 +19,6 @@ class Tool:
         return {
             "tool_name": self.tool_name,
             "parameters": self.parameters,
+            "returned_fields": self.returned_fields,
             "description": self.description,
         }
