@@ -1,6 +1,6 @@
 import math
 
-from tool import Tool
+from from_scratch.tool import Tool
 
 
 def add_numbers(n1: int, n2: int):

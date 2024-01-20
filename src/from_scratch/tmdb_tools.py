@@ -3,9 +3,11 @@ from tmdb_functions import (
     get_movie_cast,
     get_movie_reviews,
     search_movie,
+    search_person,
+    all_movie_genres,
 )
 
-from tool import Tool
+from from_scratch.tool import Tool
 
 
 discover_movies_tool = Tool(
@@ -24,24 +26,24 @@ discover_movies_tool = Tool(
         "vote_count": {"type": "int", "description": "vote count"},
         "watch_region": {"type": "string", "description": "watch region"},
         "with_cast": {
-            "type": "string",
-            "description": "with cast, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "with_companies": {
-            "type": "string",
-            "description": "with companies, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "with_crew": {
-            "type": "string",
-            "description": "with crew, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "with_genres": {
-            "type": "string",
-            "description": "with genres, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "with_keywords": {
-            "type": "string",
-            "description": "with keywords, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "with_origin_country": {
             "type": "string",
@@ -52,8 +54,8 @@ discover_movies_tool = Tool(
             "description": "with original language",
         },
         "with_people": {
-            "type": "string",
-            "description": "with people, can be a comma (AND) or pipe (OR) separated query",
+            "type": "int",
+            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
         },
         "without_companies": {"type": "string", "description": "without companies"},
         "without_genres": {"type": "string", "description": "without genres"},
@@ -76,6 +78,13 @@ search_movie_tool = Tool(
     fn=search_movie,
 )
 
+search_person_tool = Tool(
+    tool_name="search_person",
+    parameters={"query": {"type": "string", "description": "query to search"}},
+    description=search_person.__doc__,
+    fn=search_person,
+)
+
 get_movie_reviews_tool = Tool(
     tool_name="get_movie_reviews",
     parameters={"movie_id": {"type": "int", "description": "movie id"}},
@@ -90,13 +99,22 @@ get_movie_cast_tool = Tool(
     fn=get_movie_cast,
 )
 
+all_movie_genres_tool = Tool(
+    tool_name="all_movie_genres",
+    parameters={},
+    description=all_movie_genres.__doc__,
+    fn=all_movie_genres,
+)
+
 
 tmdb_tools_map = {
     tool.tool_name: tool
     for tool in [
         discover_movies_tool,
         search_movie_tool,
+        search_person_tool,
         get_movie_reviews_tool,
         get_movie_cast_tool,
+        all_movie_genres_tool,
     ]
 }
