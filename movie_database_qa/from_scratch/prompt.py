@@ -13,6 +13,9 @@ If you need to use a tool, return a response in the following JSON format:
 You should include only the required parameters to answer the user's question. If the parameter is not required, you can omit it.
 You should also include the returned_fields_to_include, which is a list of fields that you want to include in the response.
 
+if you can't find what you are looking for on a tool that returns a list of items, you can use the following parameters:
+    "page": <page_number>
+
 Use the information returned by tools to answer the user's questions.
 
 As soon as you are able to answer the user's question, return a response in the following JSON format:

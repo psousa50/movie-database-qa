@@ -1,6 +1,8 @@
 import textwrap
 import requests
 
+from movie_database_qa.log import log_if
+
 
 def tmdb_request(endpoint):
     url = f"https://api.themoviedb.org/3/{endpoint}"
@@ -20,6 +22,8 @@ def discover_movies(
     include_video="",
     language="",
     primary_release_year="",
+    primary_release_date_gte="",
+    primary_release_date_lte="",
     region="",
     sort_by="",
     vote_average="",
@@ -47,6 +51,8 @@ def discover_movies(
             {add("include_video", include_video)}
             {add("language", language)}
             {add("primary_release_year", primary_release_year)}
+            {add("primary_release_date.gte", primary_release_date_gte)}
+            {add("primary_release_date.lte", primary_release_date_lte)}
             {add("region", region)}
             {add("sort_by", sort_by)}
             {add("vote_average", vote_average)}
@@ -67,11 +73,14 @@ def discover_movies(
             {add("year", year)}            
         """
     ).replace("\n", "")
-    print("Discover query", query)
+    log_tool_query("Discover", query)
     response = tmdb_request(query)
-    return [
-        {"id": movie["id"], "title": movie["title"]} for movie in response["results"]
+    filtered_response = [
+        {"id": movie["id"], "title": movie["title"], "overview": movie["overview"]}
+        for movie in response["results"]
     ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
 
 
 def add(key, value):
@@ -81,24 +90,26 @@ def add(key, value):
 
 
 def search_movie(query: str):
-    """Searches for a list of movies"""
-    print("Search movie query", query)
+    """Searches for a list of movies by name, returns id and other information"""
+    log_tool_query("Search movie", query)
     response = tmdb_request(
         f"search/movie?query={query}&include_adult=false&language=en-US&page=1"
     )
-    return [
+    filtered_response = [
         {"id": movie["id"], "title": movie["title"], "overview": movie["overview"]}
         for movie in response["results"]
     ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
 
 
 def search_person(query: str):
-    """Searches for a list of people and returns the id and the name"""
-    print("Search person query", query)
+    """Searches for a list of people by name, returns id and other information"""
+    log_tool_query("Search person", query)
     response = tmdb_request(
         f"search/person?query={query}&include_adult=false&language=en-US&page=1"
     )
-    return [
+    filtered_response = [
         {
             "id": person["id"],
             "name": person["name"],
@@ -106,29 +117,100 @@ def search_person(query: str):
         }
         for person in response["results"]
     ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
 
 
-def get_movie_reviews(movie_id: int):
+def search_keyword(query: str):
+    """Searches for a list of keywords by name, returns id and other information"""
+    log_tool_query("Search keyword", query)
+    response = tmdb_request(
+        f"search/keyword?query={query}&include_adult=false&language=en-US&page=1"
+    )
+    filtered_response = [
+        {
+            "id": keyword["id"],
+            "name": keyword["name"],
+        }
+        for keyword in response["results"]
+    ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
+
+
+def movie_details(movie_id: int):
+    """Gets the details for a movie"""
+    log_tool_query("Movie details", movie_id)
+    response = tmdb_request(f"movie/{movie_id}?language=en-US")
+    filtered_response = {
+        "id": response["id"],
+        "title": response["title"],
+        "overview": response["overview"],
+        "genres": response["genres"],
+        "release_date": response["release_date"],
+        "runtime": response["runtime"],
+        "vote_average": response["vote_average"],
+        "vote_count": response["vote_count"],
+        "poster_path": response["poster_path"],
+    }
+    log_tool_response("Response", filtered_response)
+    return filtered_response
+
+
+def movie_reviews(movie_id: int):
     """Gets the reviews for a movie"""
-    print("Reviews query", movie_id)
+    log_tool_query("Movie reviews", movie_id)
     response = tmdb_request(f"movie/{movie_id}/reviews?language=en-US&page=1")
-    return [{"content": review["content"]} for review in response["results"]]
+    filtered_response = [
+        {"content": review["content"]} for review in response["results"]
+    ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
 
 
-def get_movie_cast(movie_id: int):
+def movie_cast(movie_id: int):
     """Gets the cast for a movie"""
-    print("Cast query", movie_id)
+    log_tool_query("Movie cast", movie_id)
     response = tmdb_request(f"movie/{movie_id}/credits?language=en-US&page=1")
     only_acting_cast = [
         cast for cast in response["cast"] if cast["known_for_department"] == "Acting"
     ][:10]
-    return [
+    filtered_response = [
         {"id": cast["id"], "name": cast["name"], "character": cast["character"]}
         for cast in only_acting_cast
     ]
+    log_tool_response("Response", filtered_response)
+    return filtered_response
+
+
+def person_details(person_id: int):
+    """Gets a person details"""
+    log_tool_query("Person details", person_id)
+    response = tmdb_request(f"person/{person_id}?language=en-US")
+    filtered_response = {
+        "id": response["id"],
+        "name": response["name"],
+        "known_for_department": response["known_for_department"],
+        "birthday": response["birthday"],
+        "deathday": response["deathday"],
+        "place_of_birth": response["place_of_birth"],
+    }
+    log_tool_response("Response", filtered_response)
+    return filtered_response
 
 
 def all_movie_genres():
     """Gets all movie genres"""
+    log_tool_query("Movie genres")
     response = tmdb_request(f"genre/movie/list")
-    return {"genres": response["genres"]}
+    filtered_response = {"genres": response["genres"]}
+    log_tool_response("Response", filtered_response)
+    return filtered_response
+
+
+def log_tool_query(*args):
+    log_if("tools_query", *args)
+
+
+def log_tool_response(*args):
+    log_if("tools_response", *args)

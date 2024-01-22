@@ -2,7 +2,7 @@ import json
 
 from openai import OpenAI
 
-from log import log
+from movie_database_qa.log import log_if, verbose
 
 
 class LLMWithTools:
@@ -29,21 +29,21 @@ class LLMWithTools:
         )
         self.add_message("user", self.user_input)
 
-        if self.options.get("verbose", False) and self.options.get("log_prompt", False):
-            print(
-                "==============================================================================\n",
-                json.dumps(self.messages, indent=4)
-                .replace("\\n", "\n")
-                .replace('\\"', '"'),
-                "------------------------------------------------------------------------------\n",
-            )
+        log_if(
+            "prompts",
+            "==============================================================================\n",
+            json.dumps(self.messages, indent=4)
+            .replace("\\n", "\n")
+            .replace('\\"', '"'),
+            "------------------------------------------------------------------------------\n",
+        )
         response = self.client.chat.completions.create(
             model="gpt-4",
             messages=self.messages,
             temperature=0.0,
         )
         llm_response = response.choices[0].message.content
-        log("Response", llm_response)
+        verbose("Response", llm_response)
         return json.loads(llm_response)
 
     def build_tools_prompt(self, tools):
@@ -76,11 +76,19 @@ class LLMWithTools:
                 parameters = llm_response["parameters"]
                 tool_response = tool(parameters)
                 returned_fields_to_include = llm_response["returned_fields_to_include"]
-                tool_response_filtered = [
-                    {k: v for k, v in r.items() if k in returned_fields_to_include}
-                    for r in tool_response
-                ]
-                log(
+
+                if isinstance(tool_response, dict):
+                    tool_response_filtered = {
+                        k: v
+                        for k, v in tool_response.items()
+                        if k in returned_fields_to_include
+                    }
+                else:
+                    tool_response_filtered = [
+                        {k: v for k, v in r.items() if k in returned_fields_to_include}
+                        for r in tool_response
+                    ]
+                verbose(
                     "Tool response filtered",
                     json.dumps(tool_response_filtered, indent=4),
                 )

@@ -5,11 +5,11 @@ from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain.agents import AgentExecutor
 from langchain_openai import ChatOpenAI
 
-from with_langchain.callbacks import LLMStartHandler
+from movie_database_qa.with_langchain.callbacks import LLMStartHandler
 
 
 class LLMWithLangChainTools:
-    def __init__(self, user_input, tools, system_prompt):
+    def __init__(self, user_input, tools, system_prompt, options={}):
         client = ChatOpenAI(model="gpt-4", temperature=0)
         self.user_input = user_input
         self.agent_executor = self.create_agent_executor(client, tools, system_prompt)

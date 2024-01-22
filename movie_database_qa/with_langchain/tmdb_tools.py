@@ -1,10 +1,10 @@
 from langchain.agents import tool
 
-from tmdb_functions import (
+from movie_database_qa.tmdb_functions import (
     all_movie_genres,
     discover_movies,
-    get_movie_cast,
-    get_movie_reviews,
+    movie_cast,
+    movie_reviews,
     search_movie,
     search_person,
 )
@@ -77,13 +77,13 @@ def search_person_tool(query: str):
 @tool
 def get_movie_reviews_tool(movie_id: int):
     """Gets movie reviews"""
-    return get_movie_reviews(movie_id=movie_id)
+    return movie_reviews(movie_id=movie_id)
 
 
 @tool
 def get_movie_cast_tool(movie_id: int):
     """Gets movie cast"""
-    return get_movie_cast(movie_id=movie_id)
+    return movie_cast(movie_id=movie_id)
 
 
 @tool

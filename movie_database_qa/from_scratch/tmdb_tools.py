@@ -1,13 +1,16 @@
-from tmdb_functions import (
+from movie_database_qa.tmdb_functions import (
     discover_movies,
-    get_movie_cast,
-    get_movie_reviews,
+    movie_cast,
+    movie_reviews,
+    movie_details,
+    person_details,
+    search_keyword,
     search_movie,
     search_person,
     all_movie_genres,
 )
 
-from from_scratch.tool import Tool
+from movie_database_qa.from_scratch.tool import Tool
 
 
 discover_movies_tool = Tool(
@@ -20,6 +23,14 @@ discover_movies_tool = Tool(
             "type": "int",
             "description": "primary release year",
         },
+        "primary_release_date.gte": {
+            "type": "date",
+            "description": "primary release date greater than or equal to",
+        },
+        "primary_release_date.lte": {
+            "type": "date",
+            "description": "primary release date less than or equal to",
+        },
         "region": {"type": "string", "description": "region"},
         "sort_by": {"type": "string", "description": "sort by"},
         "vote_average": {"type": "float", "description": "vote average"},
@@ -27,23 +38,23 @@ discover_movies_tool = Tool(
         "watch_region": {"type": "string", "description": "watch region"},
         "with_cast": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of person ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "with_companies": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of company ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "with_crew": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of person ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "with_genres": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of genre ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "with_keywords": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of keyword ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "with_origin_country": {
             "type": "string",
@@ -55,7 +66,7 @@ discover_movies_tool = Tool(
         },
         "with_people": {
             "type": "int",
-            "description": "list of person ids, use comma (,) for AND and pipe (|) for OR",
+            "description": "list of person ids, NOT names, use comma (,) for AND and pipe (|) for OR",
         },
         "without_companies": {"type": "string", "description": "without companies"},
         "without_genres": {"type": "string", "description": "without genres"},
@@ -67,7 +78,7 @@ discover_movies_tool = Tool(
         "year": {"type": "int", "description": "year"},
     },
     description=discover_movies.__doc__,
-    returned_fields=["id", "title"],
+    returned_fields=["id", "title", "overview"],
     fn=discover_movies,
 )
 
@@ -76,7 +87,7 @@ search_movie_tool = Tool(
     tool_name="search_movie",
     parameters={"query": {"type": "string", "description": "query to search"}},
     description=search_movie.__doc__,
-    returned_fields=["id", "title", "overview"],
+    returned_fields=["id", "title", "overview", "genres"],
     fn=search_movie,
 )
 
@@ -88,20 +99,56 @@ search_person_tool = Tool(
     fn=search_person,
 )
 
-get_movie_reviews_tool = Tool(
-    tool_name="get_movie_reviews",
-    parameters={"movie_id": {"type": "int", "description": "movie id"}},
-    description=get_movie_reviews.__doc__,
-    returned_fields=["content"],
-    fn=get_movie_reviews,
+search_keyword_tool = Tool(
+    tool_name="search_keyword",
+    parameters={"query": {"type": "string", "description": "query to search"}},
+    description=search_keyword.__doc__,
+    returned_fields=["id", "name"],
+    fn=search_keyword,
 )
 
-get_movie_cast_tool = Tool(
-    tool_name="get_movie_cast",
+movie_details_tool = Tool(
+    tool_name="movie_details",
     parameters={"movie_id": {"type": "int", "description": "movie id"}},
-    description=get_movie_cast.__doc__,
+    description=movie_details.__doc__,
+    returned_fields=[
+        "id"
+        "title"
+        "overview"
+        "genres"
+        "release_date"
+        "runtime"
+        "vote_average"
+        "vote_count"
+        "poster_path"
+    ],
+    fn=movie_details,
+)
+
+movie_reviews_tool = Tool(
+    tool_name="movie_reviews",
+    parameters={"movie_id": {"type": "int", "description": "movie id"}},
+    description=movie_reviews.__doc__,
+    returned_fields=["content"],
+    fn=movie_reviews,
+)
+
+movie_cast_tool = Tool(
+    tool_name="movie_cast",
+    parameters={"movie_id": {"type": "int", "description": "movie id"}},
+    description=movie_cast.__doc__,
     returned_fields=["id", "name", "character"],
-    fn=get_movie_cast,
+    fn=movie_cast,
+)
+
+person_details_tool = Tool(
+    tool_name="person_details",
+    parameters={"person_id": {"type": "int", "description": "person id"}},
+    description=person_details.__doc__,
+    returned_fields=[
+        "id" "name" "known_for_department" "birthday" "deathday" "place_of_birth"
+    ],
+    fn=person_details,
 )
 
 all_movie_genres_tool = Tool(
@@ -119,8 +166,11 @@ tmdb_tools_map = {
         discover_movies_tool,
         search_movie_tool,
         search_person_tool,
-        get_movie_reviews_tool,
-        get_movie_cast_tool,
+        search_keyword_tool,
+        movie_details_tool,
+        movie_reviews_tool,
+        movie_cast_tool,
+        person_details_tool,
         all_movie_genres_tool,
     ]
 }
