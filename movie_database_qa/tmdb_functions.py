@@ -1,7 +1,11 @@
+import os
 import textwrap
+
 import requests
 
 from movie_database_qa.log import log_if
+
+tmdb_token = os.environ["TMDB_TOKEN"]
 
 
 def tmdb_request(endpoint):
@@ -9,7 +13,7 @@ def tmdb_request(endpoint):
 
     headers = {
         "accept": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0OGRiNmVlNjcwOTk2MTU4ZDdmYmM2MzYzOWUyNzQ5NyIsInN1YiI6IjY1YTUwMzQ1NjQ3NjU0MDEyMmQ2ZWNhZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.rvWFGrgGFsrLRXutKr6kXoSGKTbMQKr5ZVg65R_GhWc",
+        "Authorization": f"Bearer {tmdb_token}",
     }
 
     response = requests.get(url, headers=headers)
